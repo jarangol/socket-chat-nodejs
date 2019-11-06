@@ -13,9 +13,8 @@ var user = {
 };
 
 socket.on('connect', function() {
-    console.log('Connected to the server');
     socket.emit('enterChat', user, function(resp) {
-        console.log(resp);
+        renderPeople(resp);
     });
 });
 
@@ -23,12 +22,14 @@ socket.on('disconnect', function() {
     console.log('Connection to the server lost');
 });
 
-socket.on('createMsg', function(mensaje) {
-    console.log('Servidor:', mensaje);
+socket.on('createMsg', function(message) {
+    renderMessages(message, false);
+    scrollBottom();
 });
 
 socket.on('peopleList', function(people) {
     console.log('Servidor:', people);
+    renderPeople(people);
 });
 
 socket.on('privateMsg', function(msg) {

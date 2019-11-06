@@ -14,10 +14,10 @@ io.on('connection', (client) => {
         };
 
         client.join(data.room);
-        const people = users.addPerson(client.id, data.name, data.room);
+        users.addPerson(client.id, data.name, data.room);
 
         client.broadcast.to(data.to).emit('peopleList', users.getPeoplePerRoom(data.room));
-
+        client.broadcast.to(data.to).emit('createMsg', createMsg('Admin', `${ data.name} join the chat.`));
         callback(users.getPeoplePerRoom(data.room));
 
     });
@@ -25,16 +25,17 @@ io.on('connection', (client) => {
 
     client.on('disconnect', () => {
         let deletedPerson = users.deletePerson(client.id);
-        client.broadcast.to(deletedPerson.to).emit('createMsg', createMsg('Admin',
-            `${ deletedPerson.name} left the chat.`));
+        client.broadcast.to(deletedPerson.to).emit('createMsg', createMsg('Admin', `${ deletedPerson.name} left the chat.`));
         client.broadcast.to(deletedPerson.to).emit('peopleList', users.getPeoplePerRoom(deletedPerson.room));
     });
 
     client.on('createMsg', (data, callback) => {
         let person = users.getPerson(client.id);
-        let msg = createMsg(person.name, person.msg);
+        let msg = createMsg(person.name, data.msg);
 
-        client.broadcast.to(data.to).emit('createMsg', msg);
+        client.broadcast.to(person.to).emit('createMsg', msg);
+
+        callback(msg);
     });
 
     client.on('privateMsg', data => {
